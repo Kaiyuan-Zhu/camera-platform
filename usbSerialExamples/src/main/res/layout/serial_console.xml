@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/demoTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:text="@string/app_title"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <View
+        android:id="@+id/separator"
+        android:layout_width="match_parent"
+        android:layout_below="@+id/demoTitle"
+        android:layout_height="1dip"
+        android:background="#eeeeee" />
+    
+    <ScrollView
+        android:id="@+id/demoScroller"
+        android:layout_width="match_parent"
+        android:layout_height="500dp"
+        android:layout_below="@+id/separator" >
+
+        <TextView
+            android:id="@+id/consoleText"
+            android:textIsSelectable="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:typeface="monospace" />
+    </ScrollView>
+
+    <Button
+        android:layout_width="130dp"
+        android:layout_height="50dp"
+        android:text="SPO2"
+        android:id="@+id/SPO2"/>
+    <Button
+        android:layout_width="300dp"
+        android:layout_height="50dp"
+        android:text="100,100,200,300,400"
+        android:id="@+id/Test"/>
+    <Button
+        android:layout_width="130dp"
+        android:layout_height="50dp"
+        android:text="Stop ADC"
+        android:id="@+id/StopADC"/>
+   <LinearLayout
+       android:layout_width="match_parent"
+       android:layout_height="73dp"
+       android:orientation="horizontal">
+
+       <Button
+           android:layout_width="130dp"
+           android:layout_height="50dp"
+           android:text="Red Led On"
+           android:id="@+id/RedLedOn"/>
+       <Button
+           android:layout_width="130dp"
+           android:layout_height="50dp"
+           android:text="IR Led On"
+           android:id="@+id/IRLedOn"/>
+       <Button
+           android:layout_width="130dp"
+           android:layout_height="50dp"
+           android:text="UV Led On"
+           android:id="@+id/UVLedOn"/>
+
+   </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="73dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:layout_width="130dp"
+            android:layout_height="50dp"
+            android:text="Red Led Off"
+            android:id="@+id/RedLedOff"/>
+        <Button
+            android:layout_width="130dp"
+            android:layout_height="50dp"
+            android:text="IR Led Off"
+            android:id="@+id/IRLedOff"/>
+        <Button
+            android:layout_width="130dp"
+            android:layout_height="50dp"
+            android:text="UV Led Off"
+            android:id="@+id/UVLedOff"/>
+
+    </LinearLayout>
+
+
+</LinearLayout>
