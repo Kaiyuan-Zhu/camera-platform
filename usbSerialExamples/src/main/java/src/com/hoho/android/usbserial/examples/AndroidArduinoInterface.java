@@ -10,6 +10,7 @@ import com.hoho.android.usbserial.util.SerialInputOutputManager;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.LinkedList;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
@@ -19,22 +20,20 @@ import java.util.StringTokenizer;
 public class AndroidArduinoInterface {
     public UsbSerialPort sPort;
     private final String TAG = SerialConsoleActivity.class.getSimpleName();
-    private Queue<String> dataQueue = null;
+
 
     public AndroidArduinoInterface(UsbSerialPort Port) {
         sPort = Port;
     }
 
-    public Queue<String> getQueue() {
-        return dataQueue;
-    }
 
 
 
-    public void startSPO2() {
+
+    public void clockwise() {
 
         try {
-            byte buffer[] = new byte[2];
+            byte buffer[] = new byte[1];
             buffer[0] = 97;
             sPort.write(buffer, 100);
         }catch(IOException e){
@@ -42,34 +41,32 @@ public class AndroidArduinoInterface {
         }
     }
 
-    public void startLed(byte LED) {
+    public void counterclockwise() {
 
         try {
-            byte buffer[] = new byte[2];
+            byte buffer[] = new byte[1];
             buffer[0] = 98;
-            buffer[1] = LED;
             sPort.write(buffer, 100);
         }catch(IOException e){
             Log.e(TAG, "Error sending bytes to arduino: " + e.getMessage(), e);
         }
     }
 
-    public void stopLED(byte LED) {
+    public void stop() {
 
         try {
-            byte buffer[] = new byte[2];
+            byte buffer[] = new byte[1];
             buffer[0] = 99;
-            buffer[1] = LED;
             sPort.write(buffer, 100);
         }catch(IOException e){
             Log.e(TAG, "Error sending bytes to arduino: " + e.getMessage(), e);
         }
     }
 
-    public void startADC() {
+    public void fullclockwise() {
 
         try {
-            byte buffer[] = new byte[2];
+            byte buffer[] = new byte[1];
             buffer[0] = 100;
             sPort.write(buffer, 100);
         }catch(IOException e){
@@ -77,10 +74,10 @@ public class AndroidArduinoInterface {
         }
     }
 
-    public void stopADC() {
+    public void fullcounterclockwise() {
 
         try {
-            byte buffer[] = new byte[2];
+            byte buffer[] = new byte[1];
             buffer[0] = 101;
             sPort.write(buffer, 100);
         }catch(IOException e){
@@ -88,37 +85,7 @@ public class AndroidArduinoInterface {
         }
     }
 
-    public void sendIR(String message) {
-        StringTokenizer st = new StringTokenizer(message, ",");
-        String frequency = "";
-        if(st.hasMoreTokens()){
-            frequency = "f" + st.nextToken();
-        }
-        while(st.hasMoreTokens()) {
-            dataQueue.add(st.nextToken());
-        }
-        if(!(frequency.length()==0)) {
-            byte buffer[] = frequency.getBytes(Charset.forName("UTF-8"));
-            try {
-                sPort.write(buffer, 100);
-            } catch (IOException e) {
-                Log.e(TAG, "Error sending bytes to arduino: " + e.getMessage(), e);
-            }
-        }
 
-
-
-    }
-
-    public void sendIRPulse(){
-        String pulse = "g" + dataQueue.poll();
-        byte buffer[] = pulse.getBytes(Charset.forName("UTF-8"));
-        try {
-            sPort.write(buffer, 100);
-        }catch(IOException e){
-            Log.e(TAG, "Error sending bytes to arduino: " + e.getMessage(), e);
-        }
-    }
 
 
 

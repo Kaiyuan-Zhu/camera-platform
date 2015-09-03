@@ -39,8 +39,11 @@ import com.hoho.android.usbserial.util.HexDump;
 import com.hoho.android.usbserial.util.SerialInputOutputManager;
 
 import java.io.IOException;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import src.com.hoho.android.usbserial.examples.AndroidArduinoInterface;
 
@@ -69,6 +72,7 @@ public class SerialConsoleActivity extends Activity {
     private TextView mTitleTextView;
     private TextView mDumpTextView;
     private ScrollView mScrollView;
+    //private Queue<String> dataQueue;
     private final AndroidArduinoInterface arduino = new AndroidArduinoInterface(sPort);
 
     private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
@@ -101,95 +105,65 @@ public class SerialConsoleActivity extends Activity {
         mTitleTextView = (TextView) findViewById(R.id.demoTitle);
         mDumpTextView = (TextView) findViewById(R.id.consoleText);
         mScrollView = (ScrollView) findViewById(R.id.demoScroller);
-        Button SPO2 = (Button) findViewById(R.id.SPO2);
-        Button RedLedOn = (Button) findViewById(R.id.RedLedOn);
-        Button UVLedOn = (Button) findViewById(R.id.UVLedOn);
-        Button IRLedOn = (Button) findViewById(R.id.IRLedOn);
-        Button RedLedOff = (Button) findViewById(R.id.RedLedOff);
-        Button UVLedOff = (Button) findViewById(R.id.UVLedOff);
-        Button IRLedOff = (Button) findViewById(R.id.IRLedOff);
-        Button Test = (Button) findViewById(R.id.Test);
-        Button StopADC = (Button) findViewById(R.id.StopADC);
 
-        StopADC.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i("activity", "Stop ADC message");
-                arduino.stopADC();
-            }
-        });
 
-        Test.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i("activity", "Test the IR PWM message");
-                String message = "100,100,200,300,400";
-                arduino.sendIR(message);
-            }
-        });
+        final Button buttonClockwise = (Button) findViewById(R.id.button_clockwise);
+        final Button buttonCounterclockwise = (Button) findViewById(R.id.button_counterclockwise);
+        final Button buttonFullClockwise = (Button) findViewById(R.id.button_fullclockwise);
+        final Button buttonFullCounterclockwise = (Button) findViewById(R.id.button_fullcounterclockwise);
 
-        RedLedOn.setOnClickListener(new View.OnClickListener() {
+
+
+
+
+
+        buttonClockwise.setOnTouchListener(new View.OnTouchListener() {
+
             @Override
-            public void onClick(View v) {
-                Log.i("activity", "Turn Red LED on");
-                byte buffer =53;
-                arduino.startLed(buffer);
-            }
-        });
-        RedLedOff.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i("activity", "Turn Red LED off");
-                byte buffer = 53;
-                arduino.stopLED(buffer);
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    Log.i("activity", "rotate clockwise");
+                    arduino.clockwise();
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    Log.i("activity", "stop servo");
+                    arduino.stop();
+                }
+                return false;
             }
         });
 
-        IRLedOn.setOnClickListener(new View.OnClickListener() {
+        buttonCounterclockwise.setOnTouchListener(new View.OnTouchListener() {
+
             @Override
-            public void onClick(View v) {
-                Log.i("activity", "Turn IR LED on");
-                byte buffer =51;
-                arduino.startLed(buffer);
-            }
-        });
-        IRLedOff.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i("activity", "Turn IR LED off");
-                byte buffer = 51;
-                arduino.stopLED(buffer);
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    Log.i("activity", "rotate counterclockwise");
+                    arduino.counterclockwise();
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    Log.i("activity", "stop servo");
+                    arduino.stop();
+                }
+                return false;
             }
         });
 
-        UVLedOn.setOnClickListener(new View.OnClickListener() {
+        buttonFullClockwise.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i("activity", "Turn UV LED on");
-                byte buffer =52;
-                arduino.startLed(buffer);
+                Log.i("activity", "full revolution clockwise");
+                arduino.fullclockwise();
             }
         });
-        UVLedOff.setOnClickListener(new View.OnClickListener() {
+
+        buttonFullCounterclockwise.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i("activity", "Turn UV LED off");
-                byte buffer = 52;
-                arduino.stopLED(buffer);
+                Log.i("activity", "full revolution counterclockwise");
+                arduino.fullcounterclockwise();
             }
         });
 
 
-
-
-
-        SPO2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i("activity", "SP02");
-                arduino.startSPO2();
-            }
-        });
     }
 
     @Override
@@ -224,7 +198,7 @@ public class SerialConsoleActivity extends Activity {
 
             try {
                 sPort.open(connection);
-                sPort.setParameters(9600, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
+                sPort.setParameters(115200, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
                 sPort.setDTR(true);
 
             } catch (IOException e) {
@@ -266,15 +240,16 @@ public class SerialConsoleActivity extends Activity {
 
     private void updateReceivedData(byte[] data) {
         String message = new String(data);
+        //dataQueue.add(message);
         //final String message = "Read " + data.length + " bytes: \n" + HexDump.dumpHexString(data) + "\n\n";
         //mDumpTextView.append(message);
-        mDumpTextView.append(message + "\n");
-        mScrollView.smoothScrollTo(0, mDumpTextView.getBottom());
-        if(message.contains("complete")){
-            if(!arduino.getQueue().isEmpty()){
-                arduino.sendIRPulse();
-            }
-        }
+        //if(dataQueue.size()%10 == 0) {
+            mDumpTextView.append(message + "\n");
+            mScrollView.smoothScrollTo(0, mDumpTextView.getBottom());
+        //}
+
+
+
     }
 
     /**

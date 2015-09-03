@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_title">USB Serial Example</string>
-    <string name="app_name">Serial Example</string>
+    <string name="app_title">3D camera platform</string>
+    <string name="app_name">3D camera platform</string>
     <string name="refreshing">Refreshing...</string>
-    
+    <string name="clockwise">clockwise</string>
+    <string name="counterclockwise">counterclockwise</string>
+    <string name="fullclockwise">full cycle clockwise</string>
+    <string name="fullcounterclockwise">full cycle counterclockwise</string>
+
 </resources>
