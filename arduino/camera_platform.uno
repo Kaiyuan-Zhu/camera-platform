@@ -1,47 +1,45 @@
-#include <Servo.h> 
+
+
+#include <Wire.h>
+#include "Adafruit_TMP007.h"
 #include <Timers.h>
+
+Adafruit_TMP007 tmp007;
+const unsigned char TEMP = 1;
+const unsigned int period = 1000;
+
 
 unsigned char TestForKey(void);
 void RespToKey(void);
-void Clockwise(void);
-void Stop(void);
-void CounterClockwise(void);
 unsigned char TestTimerExpired(unsigned char);
 void RespToTimerExpired(unsigned char);
+void StartRead(void);
+void StopRead(void);
 
-
-Servo servo;
-const int middle = 95;
-const unsigned char ROTATE = 1;
-const unsigned char REVERSE = 2;
-const int period = 150;  //to change angle of rotation, simply change the period
-const int speedArrayClockwise[] = {95, 96, 96, 96, 96, 96, 96, 96, 96, 96, 
-96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 95};
-const int speedArrayCounterClockwise[] = {95, 94, 94, 94, 94, 94, 94, 
-94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 95};
-const int clockwiseLength = sizeof(speedArrayClockwise)/2;
-const int counterclockwiseLength = sizeof(speedArrayCounterClockwise)/2;
-const int servopin = 9;
-
-int index = 0;
-void setup() 
-{ 
-  servo.attach(servopin); 
-  Stop();
-    while (!Serial);  
+void setup() { 
   Serial.begin(9600);
+
+
+  if (! tmp007.begin()) {
+    Serial.println("No sensor found");
+    while (1);
+  }
+  TMRArd_SetTimer(TEMP,period);
   
-  TMRArd_SetTimer(ROTATE,period);
-  TMRArd_SetTimer(REVERSE,period);
-  
-} 
+}
 
 void loop() {
   if (TestForKey()) RespToKey();
-  if (TMRArd_IsTimerActive(ROTATE) && TestTimerExpired(ROTATE)) RespToTimerExpired(ROTATE);
-  if (TMRArd_IsTimerActive(REVERSE) && TestTimerExpired(REVERSE)) RespToTimerExpired(REVERSE);
+  if (TMRArd_IsTimerActive(TEMP) && TestTimerExpired(TEMP)) RespToTimerExpired(TEMP);
+}
 
-} 
+void readTemp(void) {
+   float objt = tmp007.readObjTempC();
+   Serial.print(objt); 
+   Serial.print(',');
+   float diet = tmp007.readDieTempC();
+   Serial.println(diet); 
+}
 
 unsigned char TestForKey(void) {
   unsigned char KeyEventOccurred;
@@ -56,63 +54,38 @@ void RespToKey(void) {
   
   theKey = Serial.read();
 
-  Serial.println(theKey);
+  //Serial.println(theKey);
 
   
 switch(theKey){
-  case 97: {servo.write(96); break;}  //press "a" to start rotate clockwise
-  case 98: {servo.write(94); break;}  //press "b" to start rotate counterclockwise
-  case 99: {Stop(); break; }  //press "c" to stoop rotating
-  case 100: {Stop(); TMRArd_StartTimer(ROTATE); break; }  //press "d" to start a full rotate cycle clockwise
-  case 101: {Stop(); TMRArd_StartTimer(REVERSE);break; }  //press "e" to start a full rotate cycle counterclockwise
+  case 97: {StartRead(); break;}
+  case 98: {StopRead(); break;}
 
-  default: { Serial.println("press keys from a b c"); }
+
+  default: { Serial.println("press keys from a b"); }
 }
-}
-
-void Clockwise(void){
-    index++;
-    servo.write(speedArrayClockwise[index]);
-
-}
-
-void CounterClockwise(void){
-    index++;
-    servo.write(speedArrayCounterClockwise[index]);
 }
 
 unsigned char TestTimerExpired(unsigned char timer) {
   return (unsigned char)TMRArd_IsTimerExpired(timer);
 }
 
-void Stop(void) {
-      servo.write(middle);
-      TMRArd_StopTimer(ROTATE);
-      TMRArd_StopTimer(REVERSE);
-      index = 0;
-}
-
 void RespToTimerExpired(unsigned char timer)  {
   switch(timer){
-    case ROTATE: {
-      TMRArd_ClearTimerExpired(ROTATE);
-      TMRArd_InitTimer(ROTATE,period);
-      Clockwise();
-      if(index>=clockwiseLength-1) {
-            TMRArd_StopTimer(ROTATE);
-            index = 0;
-        }
-      break;
-    }
-    case REVERSE: {
-      TMRArd_ClearTimerExpired(REVERSE);
-      TMRArd_InitTimer(REVERSE,period);
-      CounterClockwise();
-      if(index>=counterclockwiseLength-1) {
-            TMRArd_StopTimer(REVERSE);
-            index = 0;
-      }
+    case TEMP: {
+      TMRArd_ClearTimerExpired(TEMP);
+      TMRArd_InitTimer(TEMP,period);
+      readTemp();
       break;
     }
   }                
+}
+
+void StartRead(void){
+  TMRArd_StartTimer(TEMP);
+}
+void StopRead(void){
+  
+  TMRArd_StopTimer(TEMP);
+  
 }
